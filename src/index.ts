@@ -35,7 +35,7 @@ export default {
     const action = decide(update, botId);
     if (action.kind === "ignore") return new Response("ok");
 
-    const chatId = update.message!.chat.id;
+    const chatId = action.chatId;
 
     // Translate + reply. Always 200, even on failure.
     try {
@@ -49,11 +49,14 @@ export default {
             );
 
       await sendMessage(chatId, result, action.replyTo, env);
-    } catch (_err) {
+    } catch (err) {
+      // Surface the failure in the Cloudflare logs (observability is enabled),
+      // then report into the chat. Always return 200 regardless.
+      console.error("translate/send failed", err);
       try {
         await sendMessage(chatId, "⚠️ Translation failed — please try again.", action.replyTo, env);
-      } catch {
-        // Reporting failed too; nothing more to do. Still return 200.
+      } catch (reportErr) {
+        console.error("failed to report error into chat", reportErr);
       }
     }
 

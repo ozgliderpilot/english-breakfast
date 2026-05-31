@@ -32,5 +32,8 @@ export async function translate(
     .trim();
 
   if (!out) throw new Error("LLM returned empty text");
-  return out;
+
+  // If the model hit the token cap the text is cut off mid-thought; flag it
+  // rather than presenting a truncated card as a complete answer.
+  return data.stop_reason === "max_tokens" ? `${out}\n\n…(truncated)` : out;
 }

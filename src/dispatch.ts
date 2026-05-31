@@ -15,8 +15,9 @@ export function decide(update: TgUpdate, botId: number): Action {
       previous: reply.text,
       instruction: text,
       replyTo: msg.message_id,
+      chatId: msg.chat.id,
     };
   }
 
-  return { kind: "fresh", text, replyTo: msg.message_id };
+  return { kind: "fresh", text, replyTo: msg.message_id, chatId: msg.chat.id };
 }

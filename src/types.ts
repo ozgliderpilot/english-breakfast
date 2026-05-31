@@ -24,5 +24,5 @@ export interface TgUpdate { message?: TgMessage; }
 
 export type Action =
   | { kind: "ignore" }
-  | { kind: "fresh";  text: string;     replyTo: number }
-  | { kind: "refine"; previous: string; instruction: string; replyTo: number };
+  | { kind: "fresh";  text: string;     replyTo: number; chatId: number }
+  | { kind: "refine"; previous: string; instruction: string; replyTo: number; chatId: number };

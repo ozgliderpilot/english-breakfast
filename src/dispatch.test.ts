@@ -100,6 +100,7 @@ describe("decide — step 3: reply to bot → refine", () => {
       previous: "Hello, how are you doing today?",
       instruction: "make it shorter",
       replyTo: 10,
+      chatId: CHAT_ID,
     });
   });
 
@@ -110,6 +111,7 @@ describe("decide — step 3: reply to bot → refine", () => {
       previous: "Hey there!",
       instruction: "more formal",
       replyTo: 77,
+      chatId: CHAT_ID,
     });
   });
 });
@@ -121,6 +123,7 @@ describe("decide — step 3 edges: NOT refine when reply is not to bot", () => {
       kind: "fresh",
       text: "that's funny",
       replyTo: 10,
+      chatId: CHAT_ID,
     });
   });
 
@@ -130,6 +133,7 @@ describe("decide — step 3 edges: NOT refine when reply is not to bot", () => {
       kind: "fresh",
       text: "what did you send?",
       replyTo: 15,
+      chatId: CHAT_ID,
     });
   });
 });
@@ -141,6 +145,7 @@ describe("decide — step 4: fresh translation", () => {
       kind: "fresh",
       text: "Good morning, everyone!",
       replyTo: 7,
+      chatId: CHAT_ID,
     });
   });
 
@@ -150,6 +155,7 @@ describe("decide — step 4: fresh translation", () => {
       kind: "fresh",
       text: "Привет, как дела?",
       replyTo: 8,
+      chatId: CHAT_ID,
     });
   });
 
@@ -159,6 +165,7 @@ describe("decide — step 4: fresh translation", () => {
       kind: "fresh",
       text: "3 tickets please",
       replyTo: 9,
+      chatId: CHAT_ID,
     });
   });
 
