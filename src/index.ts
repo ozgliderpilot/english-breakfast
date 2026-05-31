@@ -1,7 +1,7 @@
 import type { Env, TgUpdate } from "./types";
 import { hasValidSecret, isAllowedChat } from "./auth";
 import { decide } from "./dispatch";
-import { FRESH_SYSTEM_PROMPT, REFINE_SYSTEM_PROMPT, refineUserMessage } from "./prompts";
+import { selectFreshPrompt, REFINE_SYSTEM_PROMPT, refineUserMessage } from "./prompts";
 import { translate } from "./llm";
 import { sendMessage } from "./telegram";
 
@@ -41,7 +41,7 @@ export default {
     try {
       const result =
         action.kind === "fresh"
-          ? await translate(FRESH_SYSTEM_PROMPT, action.text, env)
+          ? await translate(selectFreshPrompt(action.text), action.text, env)
           : await translate(
               REFINE_SYSTEM_PROMPT,
               refineUserMessage(action.previous, action.instruction),

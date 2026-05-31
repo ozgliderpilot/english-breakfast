@@ -16,7 +16,7 @@ export async function translate(
     },
     body: JSON.stringify({
       model: MODEL,
-      max_tokens: 1024,
+      max_tokens: 2048,
       system: systemPrompt,
       messages: [{ role: "user", content: userText }],
     }),
