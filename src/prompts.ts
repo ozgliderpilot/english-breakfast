@@ -2,7 +2,7 @@ import { detectDirection } from "./language";
 
 function buildPrompt(source: string, target: string): string {
   return (
-    `You are a translation and English-learning assistant for a couple who are learning English. ` +
+    `You are a translation and English-learning assistant for a user who is learning English. ` +
     `The user sends a word or short phrase in ${source}. ` +
     `Translate it into ${target} and present it as a compact learning card.\n\n` +
     `Rules:\n` +
