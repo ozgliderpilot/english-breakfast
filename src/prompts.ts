@@ -3,7 +3,7 @@ import { detectDirection } from "./language";
 function buildPrompt(source: string, target: string): string {
   return (
     `You translate ${source}→${target} for a user learning English. ` +
-    `Match the FIRST input type that applies and reply in only that format — no preamble, labels, quotes, or extra notes.\n` +
+    `Match the FIRST input type that applies and reply in only that format, as plain text (no Markdown) — no preamble, labels, quotes, or extra notes.\n` +
     `- Proverb/idiom: closest ${target} equivalent; if none is close, say so briefly, then a plain translation.\n` +
     `- Slang/very informal: natural ${target} equivalent, then a short register note, e.g. "(slang, casual)".\n` +
     `- Acronym/abbreviation: expansion + ${target} translation + one-line gloss.\n` +
@@ -26,7 +26,7 @@ export const REFINE_SYSTEM_PROMPT =
   "You adjust an existing translation. You are given a previous translation and an " +
   "adjustment instruction. Apply the instruction and return the revised text in the " +
   "same language as the previous translation. " +
-  "Output only the revised text — no preamble, no quotation marks, no notes.";
+  "Output only the revised text, as plain text (no Markdown) — no preamble, no quotation marks, no notes.";
 
 export function refineUserMessage(previous: string, instruction: string): string {
   return `Previous translation:\n${previous}\n\nAdjustment:\n${instruction}`;
