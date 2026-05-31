@@ -6,8 +6,8 @@ All checks confirmed green immediately before this document was written:
 
 ```
 npm test
-  Test Files  2 passed (2)
-       Tests  26 passed (26)
+  Test Files  4 passed (4)
+       Tests  37 passed (37)
 
 npm run typecheck
   (exit 0, no errors)
@@ -56,8 +56,9 @@ No `.dev.vars` (real secrets), no `.env`, no `secrets.*` file appears in the lis
 |---|---|
 | **Status** | VERIFIED (inspection) + REQUIRES LIVE DEPLOY (translation quality) |
 | **Threading — inspected** | `src/telegram.ts` line 17: the `sendMessage` call always passes `reply_to_message_id: replyToMessageId`. The value supplied is `action.replyTo`, which `decide()` sets to `msg.message_id` of the triggering message (`src/dispatch.ts` lines 19 and 21). Wiring verified in `src/index.ts` line 51: `await sendMessage(chatId, result, action.replyTo, env)`. |
-| **Translation direction** | `src/prompts.ts` contains `FRESH_SYSTEM_PROMPT` which instructs the LLM to detect language and produce the opposite (English↔Russian). Verified by inspection; actual output quality requires a live run against the Anthropic API. |
-| **Live deploy action** | Send an English and a Russian message in the group; confirm threaded replies in the opposite language. |
+| **Translation direction** | Direction is now **deterministic**: `src/language.ts` `detectDirection()` counts Cyrillic (U+0400–U+04FF) vs basic-Latin (A–Z, a–z) characters and returns `"ru2en"` only when Cyrillic strictly outnumbers Latin; otherwise `"en2ru"`. This logic is **unit-tested** in `src/language.test.ts` (9 tests covering pure English, pure Russian incl. Ёё, majority-Cyrillic mixed, majority-Latin mixed, ties, digits/emoji-only, and empty string). `selectFreshPrompt()` in `src/prompts.ts` uses this to pick `EN_TO_RU_PROMPT` or `RU_TO_EN_PROMPT`; that routing is tested in `src/prompts.test.ts`. |
+| **Card content (English examples, numbered senses)** | Produced by the LLM. **NOT unit-tested** — verified by live/manual evaluation only. The prompt instructs the model to identify distinct meanings, output numbered senses for 2+ meanings, and prefix every English example with `• `. |
+| **Live deploy action** | Send an English and a Russian message; confirm threaded learning-card replies. Also send a multi-meaning word (e.g. "spring") and confirm numbered senses with English examples. |
 
 ---
 

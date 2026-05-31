@@ -177,8 +177,9 @@ In your Telegram group, try the following scenarios:
 
 | Action | Expected result |
 |---|---|
-| Send an English phrase, e.g. `Good morning!` | Bot replies in Russian, threaded to your message |
-| Send a Russian phrase, e.g. `Как дела?` | Bot replies in English, threaded to your message |
+| Send an English phrase, e.g. `Good morning!` | Bot replies with a Russian learning card, threaded to your message |
+| Send a Russian phrase, e.g. `Как дела?` | Bot replies with an English learning card, threaded to your message |
+| Send a multi-meaning English word, e.g. `spring` | Bot replies with a numbered list of senses (e.g. the season, a coiled spring, to jump), each with English example sentences prefixed by `• ` |
 | Reply to a bot reply with `more formal` | Bot replies with an adjusted version in the same language |
 | Send a message starting with `.`, e.g. `.ignore this` | Bot does nothing |
 | Send a message starting with `,`, e.g. `,aside` | Bot does nothing |
