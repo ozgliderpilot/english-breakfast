@@ -2,16 +2,20 @@ import { detectDirection } from "./language";
 
 function buildPrompt(source: string, target: string): string {
   return (
-    `You are a translation and English-learning assistant for a user who is learning English. ` +
-    `The user sends a word or short phrase in ${source}. ` +
-    `Translate it into ${target} and present it as a compact learning card.\n\n` +
-    `Rules:\n` +
-    `- Identify the common, genuinely distinct meanings of the input. Keep near-synonyms together as one meaning; only separate clearly different meanings. Order meanings from most to least common.\n` +
-    `- If there is ONE meaning: output the ${target} translation on the first line, then a blank line, then exactly 2 example sentences.\n` +
-    `- If there are TWO meanings: output a numbered list (1., 2.). For each meaning write the ${target} translation, then ' — ', then a short English description of that sense; on the following lines give 2 example sentences.\n` +
-    `- If there are THREE OR MORE meanings: output a numbered list of ALL common meanings, each with the ${target} translation, ' — ', a short English description, followed by 1 example sentence.\n` +
-    `- Every example sentence must be in English and must use the English term naturally in context. (For English-to-Russian, the English term is the original input; for Russian-to-English, it is your English translation.) Prefix each example with '• ' and indent examples that sit under a numbered meaning.\n` +
-    `- Output ONLY the card — no preamble, no surrounding quotation marks, no closing notes.`
+    `You translate ${source}→${target} for a user learning English. ` +
+    `Match the FIRST input type that applies and reply in only that format — no preamble, labels, quotes, or extra notes.\n` +
+    `- Proverb/idiom: closest ${target} equivalent; if none is close, say so briefly, then a plain translation.\n` +
+    `- Slang/very informal: natural ${target} equivalent, then a short register note, e.g. "(slang, casual)".\n` +
+    `- Acronym/abbreviation: expansion + ${target} translation + one-line gloss.\n` +
+    `- Proper noun/name: transliterate, or use the established ${target} form.\n` +
+    `- Full sentence: plain translation preserving register and tone.\n` +
+    `- Word or short phrase (incl. phrasal verbs): a learning card —\n` +
+    `  - Show the IPA of the English word (source or translation, whichever is English).\n` +
+    `  - List the common distinct meanings, most common first; merge near-synonyms.\n` +
+    `  - 1 meaning: ${target} translation, a "Collocations:" line (2–4 common English pairings), blank line, then 2 English example sentences.\n` +
+    `  - 2 meanings: numbered; each "${target} translation — short English gloss"; 2 examples each; no collocations.\n` +
+    `  - 3+ meanings: numbered; each "${target} translation — short English gloss"; 1 example each; no collocations.\n` +
+    `  - Examples are English sentences, each prefixed "• ".`
   );
 }
 

@@ -35,16 +35,19 @@ Step 3 must confirm the replied-to message was sent *by the bot* (not by the oth
 
 ## The two modes
 
-**Fresh translation.** Direction is detected deterministically in code (see Language detection above): `detectDirection` counts Cyrillic vs. basic-Latin letters in the message text and selects the appropriate directional prompt before any LLM call. Nothing is stored. The model then produces a compact **learning card** — not just the bare translation — because the two users are learning English:
+**Fresh translation.** Direction is detected deterministically in code (see Language detection above): `detectDirection` counts Cyrillic vs. basic-Latin letters in the message text and selects the appropriate directional prompt before any LLM call. Nothing is stored. The model then classifies the input as exactly one of six types (checked in this order) and replies in the matching format — only the word/phrase case uses the full learning card:
 
-- **EN→RU:** Russian translation + English usage examples of the source English term.
-- **RU→EN:** English translation + English usage examples of the translated English term.
-- **Sense handling** (ordered most-common first):
-  - 1 meaning → flat: translation on first line, blank line, then 2 English example sentences.
-  - 2 meanings → numbered list (1., 2.), each with `<translation> — <short English sense tag>`, then 2 example sentences.
-  - 3+ meanings → numbered list of all common meanings, each with `<translation> — <short English sense tag>`, then 1 example sentence.
-- Every example sentence is in English and prefixed with `• `. Examples under a numbered meaning are indented.
-- Output is the card only — no preamble, no surrounding quotation marks, no closing notes.
+1. **Proverb / idiom** → the closest equivalent proverb or idiom in the target language; if none is close, a one-line note saying so plus a best plain translation. No card.
+2. **Slang / very informal** → a natural target-language equivalent, with a brief register note (e.g. "(slang, casual)"). No card.
+3. **Acronym / abbreviation** → the full expansion, its translation, and a one-line gloss.
+4. **Proper noun / name** → transliterated (or the established target-language form), not translated by meaning.
+5. **Full sentence** → a plain translation that preserves the original register and tone. No examples, no card.
+6. **Word / short lexical phrase** (incl. phrasal verbs, collocations) → the **learning card**, because the user is learning English:
+   - The English term always carries its **IPA** pronunciation, shown next to that term (the source for EN→RU, the translation for RU→EN).
+   - **Sense handling** (ordered most-common first): 1 meaning → translation line (with IPA), a short `Collocations:` line of common English pairings, blank line, then 2 English example sentences; 2 meanings → numbered list, each `<translation> — <short English sense tag>` (IPA on the English word) with 2 examples, collocations omitted; 3+ meanings → numbered list of all common meanings, each with 1 example, collocations omitted.
+   - Every example sentence is in English, prefixed with `• `; examples under a numbered meaning are indented.
+
+Output is the reply only — no preamble, no category label, no surrounding quotation marks, no closing notes.
 
 **Refine.** Take a previous translation plus an adjustment instruction and return the adjusted text, in the same language as the previous result. Output only the result. Note: when refining a multi-line learning card, the instruction (e.g. "more formal") is inherently ambiguous about which part of the card to adjust; refine operates on the whole previous output as-is.
 
