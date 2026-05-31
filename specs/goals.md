@@ -2,7 +2,7 @@
 
 ## The idea
 
-A personal translation tool for a couple who regularly translate short phrases between English and Russian. Dictionaries handle single words well; phrases need a language model. Today that means opening a chat assistant and re-typing an instruction ("translate this to Russian…") every single time. The goal is to remove that friction completely: open one place, paste a phrase, get the translation back.
+A personal translation and English-learning aid for a couple who regularly translate short phrases between English and Russian and want to build their English vocabulary along the way. Dictionaries handle single words well; phrases need a language model, and a bare translation misses the chance to show how the word is actually used. Today that means opening a chat assistant and re-typing an instruction ("translate this to Russian…") every single time. The goal is to remove that friction completely: open one place, paste a phrase, get back a compact learning card — translation plus English usage examples — with no extra input.
 
 ## Who it's for
 
@@ -14,8 +14,9 @@ A shared space that *is* the translation function. You paste a phrase and the tr
 
 ## Functional requirements
 
-- Translate short phrases between English and Russian, automatically detecting the direction.
-- Translation is the default action: any phrase sent is translated with zero extra input.
+- Translate short phrases between English and Russian, automatically detecting the direction (determined in code by letter counting, not by the model).
+- Each result is a compact learning card: translation plus English usage examples, with all common distinct meanings listed.
+- Translation/learning card is the default action: any phrase sent is processed with zero extra input.
 - A lightweight way to mark a message as "not for translation", so the shared space can still carry the occasional human aside.
 - A way to refine a result ("make it more formal", "shorter") without re-typing the phrase.
 - Usable by two people at once, with each result clearly tied to the phrase that produced it.

@@ -12,7 +12,7 @@ The bot is **stateless and event-driven** — it only needs to act when a messag
 
 - **Webhook, not long-polling.** Telegram POSTs each update to the Worker's URL. There is no polling loop and therefore no process to keep alive — the prerequisite both for going serverless and for the zero-cost goal.
 - **Cloudflare Workers.** Runs as a V8 isolate at the edge: no cold-start penalty, low latency, and a free tier far larger than two people will ever consume. Running cost is effectively zero; the only per-use cost is the language-model call.
-- **Stateless (v1).** Translation direction is auto-detected by the model, so there is nothing to persist — no database, no key-value store. The whole system stays a single deployable script.
+- **Stateless (v1).** Translation direction is determined deterministically in code from the message text (letter-counting, no LLM involvement), so there is nothing to persist — no database, no key-value store. The whole system stays a single deployable script.
 
 ## Component view
 
@@ -33,7 +33,7 @@ Only the Worker is ours. Telegram provides the client, the transport, and messag
 6. It **replies** into the group via Telegram's `sendMessage`, attached to the triggering message.
 7. It returns `200`.
 
-The model picks between two behaviours — a fresh translation or a refinement of a previous result — based on the message. The detailed rules live in `design.md`.
+The Worker picks between two behaviours — a fresh translation or a refinement of a previous result — based on the message. Direction for fresh translations is detected in code, not by the model. The detailed rules live in `design.md`.
 
 ## Security boundary
 

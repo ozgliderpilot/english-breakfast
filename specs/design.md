@@ -9,7 +9,8 @@ The Worker is small enough to be one file, but the responsibilities are kept dis
 - **Entry / router** — the `fetch` handler and the only entry point. Owns request routing and the always-`200` contract.
 - **Auth** — the perimeter check (secret-token header and group allowlist). Pure predicates, no side effects.
 - **Dispatch** — the decision tree that turns an authenticated update into an action: ignore, fresh translation, or refine.
-- **Prompts** — builds the system prompts for the two modes.
+- **Language detection** — `detectDirection(text)` counts Cyrillic vs. basic-Latin letters and returns `"ru2en"` or `"en2ru"`. Deterministic; no LLM involved.
+- **Prompts** — builds two directional system prompts (`EN_TO_RU_PROMPT`, `RU_TO_EN_PROMPT`) from a shared template, plus the refine prompt. `selectFreshPrompt(text)` calls `detectDirection` to choose the right one.
 - **LLM** — one function: text plus a system prompt in, translated text out. The only place that knows which provider is used.
 - **Telegram** — wraps the `sendMessage` reply call.
 
@@ -34,9 +35,18 @@ Step 3 must confirm the replied-to message was sent *by the bot* (not by the oth
 
 ## The two modes
 
-**Fresh translation.** Detect whether the phrase is English or Russian and translate it into the other language. Output only the translation — no preamble, no quotation marks, no explanation. Direction detection lives entirely in the prompt; nothing is stored.
+**Fresh translation.** Direction is detected deterministically in code (see Language detection above): `detectDirection` counts Cyrillic vs. basic-Latin letters in the message text and selects the appropriate directional prompt before any LLM call. Nothing is stored. The model then produces a compact **learning card** — not just the bare translation — because the two users are learning English:
 
-**Refine.** Take a previous translation plus an adjustment instruction and return the adjusted text, in the same language as the previous result. Output only the result.
+- **EN→RU:** Russian translation + English usage examples of the source English term.
+- **RU→EN:** English translation + English usage examples of the translated English term.
+- **Sense handling** (ordered most-common first):
+  - 1 meaning → flat: translation on first line, blank line, then 2 English example sentences.
+  - 2 meanings → numbered list (1., 2.), each with `<translation> — <short English sense tag>`, then 2 example sentences.
+  - 3+ meanings → numbered list of all common meanings, each with `<translation> — <short English sense tag>`, then 1 example sentence.
+- Every example sentence is in English and prefixed with `• `. Examples under a numbered meaning are indented.
+- Output is the card only — no preamble, no surrounding quotation marks, no closing notes.
+
+**Refine.** Take a previous translation plus an adjustment instruction and return the adjusted text, in the same language as the previous result. Output only the result. Note: when refining a multi-line learning card, the instruction (e.g. "more formal") is inherently ambiguous about which part of the card to adjust; refine operates on the whole previous output as-is.
 
 ### The refine constraint (important)
 

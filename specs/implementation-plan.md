@@ -18,7 +18,8 @@ translate-bot/
     index.ts        # fetch handler: routing, auth gating, dispatch, reply, always-200
     auth.ts         # secret-token + chat allowlist predicates
     dispatch.ts     # the 4-step decision tree -> Action
-    prompts.ts      # the two system prompts + refine user-message builder
+    language.ts     # detectDirection(text): "en2ru" | "ru2en"  (Cyrillic vs. Latin count)
+    prompts.ts      # two directional prompts + selectFreshPrompt + refine prompt/builder
     llm.ts          # translate(systemPrompt, userText, env) -> string  (Anthropic)
     telegram.ts     # sendMessage(...)
     types.ts        # Env + Telegram update slice + Action union
@@ -28,6 +29,10 @@ translate-bot/
   package.json      # from C3
   tsconfig.json     # from C3
 ```
+
+## Language detection — `src/language.ts`
+
+Exports `Direction = "en2ru" | "ru2en"` and `detectDirection(text: string): Direction`. Counts Cyrillic code points (U+0400–U+04FF) and basic-Latin letters (A–Z, a–z); returns `"ru2en"` only when Cyrillic strictly outnumbers Latin. Ties, letterless input, and empty strings all default to `"en2ru"`. No dependencies; pure function.
 
 ## Types — `src/types.ts`
 
@@ -109,14 +114,28 @@ export function decide(update: TgUpdate, botId: number): Action {
 
 ## Prompts — `src/prompts.ts`
 
-The exact strings are an implementation artifact; `design.md` specifies what they must achieve.
+The exact strings are an implementation artifact; `design.md` specifies what they must achieve. Two directional prompts are built from a shared template; `selectFreshPrompt` uses `detectDirection` to choose between them.
 
 ```ts
-export const FRESH_SYSTEM_PROMPT =
-  "You are a translation engine for English and Russian. " +
-  "Detect the language of the user's text. If it is English, translate it to Russian. " +
-  "If it is Russian, translate it to English. Preserve tone and register. " +
-  "Output only the translation — no preamble, no quotation marks, no notes, no alternatives.";
+import { detectDirection } from "./language";
+
+function buildPrompt(source: string, target: string): string {
+  return (
+    `You are a translation and English-learning assistant for a couple who are learning English. ` +
+    `The user sends a word or short phrase in ${source}. ` +
+    `Translate it into ${target} and present it as a compact learning card.\n\n` +
+    `Rules:\n` +
+    `- Identify the common, genuinely distinct meanings of the input. Keep near-synonyms together as one meaning; only separate clearly different meanings. Order meanings from most to least common.\n` +
+    `- If there is ONE meaning: output the ${target} translation on the first line, then a blank line, then exactly 2 example sentences.\n` +
+    `- If there are TWO meanings: output a numbered list (1., 2.). For each meaning write the ${target} translation, then ' — ', then a short English description of that sense; on the following lines give 2 example sentences.\n` +
+    `- If there are THREE OR MORE meanings: output a numbered list of ALL common meanings, each with the ${target} translation, ' — ', a short English description, followed by 1 example sentence.\n` +
+    `- Every example sentence must be in English and must use the English term naturally in context. (For English-to-Russian, the English term is the original input; for Russian-to-English, it is your English translation.) Prefix each example with '• ' and indent examples that sit under a numbered meaning.\n` +
+    `- Output ONLY the card — no preamble, no surrounding quotation marks, no closing notes.`
+  );
+}
+
+export const EN_TO_RU_PROMPT = buildPrompt("English", "Russian");
+export const RU_TO_EN_PROMPT = buildPrompt("Russian", "English");
 
 export const REFINE_SYSTEM_PROMPT =
   "You adjust an existing translation. You are given a previous translation and an " +
@@ -126,6 +145,10 @@ export const REFINE_SYSTEM_PROMPT =
 
 export function refineUserMessage(previous: string, instruction: string): string {
   return `Previous translation:\n${previous}\n\nAdjustment:\n${instruction}`;
+}
+
+export function selectFreshPrompt(text: string): string {
+  return detectDirection(text) === "ru2en" ? RU_TO_EN_PROMPT : EN_TO_RU_PROMPT;
 }
 ```
 
@@ -152,7 +175,7 @@ export async function translate(
     },
     body: JSON.stringify({
       model: MODEL,
-      max_tokens: 1024,
+      max_tokens: 2048,
       system: systemPrompt,
       messages: [{ role: "user", content: userText }],
     }),
@@ -208,7 +231,7 @@ Owns routing, the auth gates, dispatch, the reply, and the always-`200` contract
 import type { Env, TgUpdate } from "./types";
 import { hasValidSecret, isAllowedChat } from "./auth";
 import { decide } from "./dispatch";
-import { FRESH_SYSTEM_PROMPT, REFINE_SYSTEM_PROMPT, refineUserMessage } from "./prompts";
+import { selectFreshPrompt, REFINE_SYSTEM_PROMPT, refineUserMessage } from "./prompts";
 import { translate } from "./llm";
 import { sendMessage } from "./telegram";
 
@@ -248,7 +271,7 @@ export default {
     try {
       const result =
         action.kind === "fresh"
-          ? await translate(FRESH_SYSTEM_PROMPT, action.text, env)
+          ? await translate(selectFreshPrompt(action.text), action.text, env)
           : await translate(
               REFINE_SYSTEM_PROMPT,
               refineUserMessage(action.previous, action.instruction),
