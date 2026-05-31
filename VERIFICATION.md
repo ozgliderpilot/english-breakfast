@@ -22,10 +22,9 @@ npm run typecheck
 ```
 .dev.vars.example
 .gitignore
-.idea/.gitignore
-.idea/english-breakfast.iml
-.idea/misc.xml
-.idea/modules.xml
+DEPLOY.md
+README.md
+VERIFICATION.md
 package-lock.json
 package.json
 specs/architecture.md
@@ -150,7 +149,7 @@ No `.dev.vars` (real secrets), no `.env`, no `secrets.*` file appears in the lis
 |---|---|
 | **Status** | VERIFIED (inspection + git ls-files) |
 | **git ls-files audit** | See the **Secret Hygiene Audit** section above. `.dev.vars` is absent from tracking. No `.env`, `secrets.*`, or credential files appear. |
-| **.gitignore** | `src/.gitignore` line 4: `.dev.vars` is explicitly excluded. |
+| **.gitignore** | Root `.gitignore` line 4: `.dev.vars` is explicitly excluded. |
 | **.dev.vars.example** | Tracked file contains only placeholder values; serves as a template for local dev without exposing real credentials. |
 | **wrangler.jsonc** | Only non-secret configuration (`ALLOWED_CHAT_ID`, which is a group ID — not a credential) lives in `vars`. All three runtime secrets (`BOT_TOKEN`, `LLM_API_KEY`, `WEBHOOK_SECRET`) are absent from this file. |
 | **Runbook** | `DEPLOY.md` step 7 instructs the operator to provision all three secrets via `npx wrangler secret put`. |

@@ -1,3 +1,4 @@
 BOT_TOKEN=123456:your-token
 LLM_API_KEY=sk-ant-...
 WEBHOOK_SECRET=some-long-random-string
+ALLOWED_CHAT_ID=-100123
