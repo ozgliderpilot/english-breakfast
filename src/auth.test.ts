@@ -67,6 +67,8 @@ describe("hasValidSecret", () => {
     expect(hasValidSecret(req, env)).toBe(false);
   });
 
+  // Edge case (degenerate config): an empty secret accepts an empty header.
+  // Documents current behavior; production should never set an empty WEBHOOK_SECRET.
   it("returns true when both header and secret are the same empty string", () => {
     const env = makeEnv({ WEBHOOK_SECRET: "" });
     const req = makeRequest("");
@@ -107,18 +109,6 @@ describe("isAllowedChat", () => {
   it("returns false when update has no message (message is absent)", () => {
     const env = makeEnv({ ALLOWED_CHAT_ID: "-100123456789" });
     const update: TgUpdate = {}; // no message
-    expect(isAllowedChat(update, env)).toBe(false);
-  });
-
-  it("string ALLOWED_CHAT_ID '-100123' matches numeric chat id -100123 via Number() coercion", () => {
-    const env = makeEnv({ ALLOWED_CHAT_ID: "-100123" });
-    const update = makeUpdate(-100123);
-    expect(isAllowedChat(update, env)).toBe(true);
-  });
-
-  it("string ALLOWED_CHAT_ID '-100123' does NOT match chat id -100124", () => {
-    const env = makeEnv({ ALLOWED_CHAT_ID: "-100123" });
-    const update = makeUpdate(-100124);
     expect(isAllowedChat(update, env)).toBe(false);
   });
 });

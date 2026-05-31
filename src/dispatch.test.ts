@@ -105,11 +105,12 @@ describe("decide — step 3: reply to bot → refine", () => {
 
   it("replyTo uses the new message's message_id, not the replied-to id", () => {
     const update = replyUpdate("more formal", BOT_ID, "Hey there!", 77, 3);
-    const result = decide(update, BOT_ID);
-    expect(result.kind).toBe("refine");
-    if (result.kind === "refine") {
-      expect(result.replyTo).toBe(77);
-    }
+    expect(decide(update, BOT_ID)).toEqual({
+      kind: "refine",
+      previous: "Hey there!",
+      instruction: "more formal",
+      replyTo: 77,
+    });
   });
 });
 
@@ -161,8 +162,7 @@ describe("decide — step 4: fresh translation", () => {
     });
   });
 
-  it("empty string (no leading aside char) falls to fresh — boundary", () => {
-    // An empty string has no text? No: empty string is falsy so !msg.text is true → ignore
+  it("empty string is falsy → caught at step 1 → ignore", () => {
     const update: TgUpdate = {
       message: {
         message_id: 11,
@@ -170,7 +170,6 @@ describe("decide — step 4: fresh translation", () => {
         chat: { id: CHAT_ID, type: "group" },
       },
     };
-    // empty string is falsy → step 1 catches it → ignore
     expect(decide(update, BOT_ID)).toEqual({ kind: "ignore" });
   });
 });
