@@ -4,7 +4,7 @@
   "main": "src/index.ts",
   "compatibility_date": "2026-05-29",
   "vars": {
-    "ALLOWED_CHAT_ID": "-823294295"
+    "ALLOWED_CHAT_ID": "-1003756778073"
   },
   "observability": { "enabled": true }
 }

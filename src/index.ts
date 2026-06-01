@@ -27,8 +27,12 @@ export default {
       return new Response("ok");
     }
 
-    // Perimeter 2: chat allowlist. Wrong chat is silently ignored.
-    if (!isAllowedChat(update, env)) return new Response("ok");
+    // Perimeter 2: chat allowlist. Wrong chat is ignored, but logged so the
+    // group's numeric id can be discovered during setup (see DEPLOY.md step 9).
+    if (!isAllowedChat(update, env)) {
+      console.log("rejected message from non-allowed chat:", update.message?.chat.id);
+      return new Response("ok");
+    }
 
     // Decide.
     const botId = Number(env.BOT_TOKEN.split(":")[0]);

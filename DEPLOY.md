@@ -108,32 +108,23 @@ Note this URL — you need it in steps 9 and 10.
 
 Telegram does not tell you the group's numeric ID up front; you need to ask it to send one message and observe the incoming update.
 
-**This is the only temporary code edit in the runbook — it is reverted immediately after.**
+No code edit is required: until `ALLOWED_CHAT_ID` matches your group, the Worker rejects every message but logs the rejected chat's ID (see the "Perimeter 2" check in `src/index.ts`). You read that ID from the logs, set it, and redeploy.
 
-1. Open `src/index.ts`. After the line `let update: TgUpdate;` and its `try/catch`, add a temporary log line:
-
-   ```ts
-   // TEMP — remove after capturing chat id
-   console.log("CHAT_ID:", update.message?.chat.id);
-   ```
-
-2. Redeploy:
-
-   ```
-   npx wrangler deploy
-   ```
-
-3. Send any message in your Telegram group.
-
-4. Tail the Worker logs in a separate terminal:
+1. Tail the Worker logs in a separate terminal:
 
    ```
    npx wrangler tail
    ```
 
-   You will see a log line like `CHAT_ID: -1001234567890`.
+2. Send any message in your Telegram group.
 
-5. Copy that number. Open `wrangler.jsonc` and set `ALLOWED_CHAT_ID`:
+3. In the tail output you will see a log line like:
+
+   ```
+   rejected message from non-allowed chat: -1001234567890
+   ```
+
+4. Copy that number. Open `wrangler.jsonc` and set `ALLOWED_CHAT_ID`:
 
    ```jsonc
    "vars": {
@@ -141,9 +132,7 @@ Telegram does not tell you the group's numeric ID up front; you need to ask it t
    }
    ```
 
-6. Remove the `console.log` line from `src/index.ts`.
-
-7. Redeploy one more time:
+5. Redeploy so the new value takes effect:
 
    ```
    npx wrangler deploy
