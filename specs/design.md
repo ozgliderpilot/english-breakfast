@@ -10,7 +10,7 @@ The Worker is small enough to be one file, but the responsibilities are kept dis
 - **Auth** — the perimeter check (secret-token header and group allowlist). Pure predicates, no side effects.
 - **Dispatch** — the decision tree that turns an authenticated update into an action: ignore, fresh translation, or refine.
 - **Language detection** — `detectDirection(text)` counts Cyrillic vs. basic-Latin letters and returns `"ru2en"` or `"en2ru"`. Deterministic; no LLM involved.
-- **Prompts** — builds two directional system prompts (`EN_TO_RU_PROMPT`, `RU_TO_EN_PROMPT`) from a shared template, plus the refine prompt. `selectFreshPrompt(text)` calls `detectDirection` to choose the right one.
+- **Prompts** — two separate directional system prompts (`EN_TO_RU_PROMPT`, `RU_TO_EN_PROMPT`) — kept distinct because they diverge (EN→RU shows IPA, RU→EN does not) — plus the refine prompt. `selectFreshPrompt(text)` calls `detectDirection` to choose the right one.
 - **LLM** — one function: text plus a system prompt in, translated text out. The only place that knows which provider is used.
 - **Telegram** — wraps the `sendMessage` reply call.
 
@@ -43,8 +43,8 @@ Step 3 must confirm the replied-to message was sent *by the bot* (not by the oth
 4. **Proper noun / name** → transliterated (or the established target-language form), not translated by meaning.
 5. **Full sentence** → a plain translation that preserves the original register and tone. No examples, no card.
 6. **Word / short lexical phrase** (incl. phrasal verbs, collocations) → the **learning card**, because the user is learning English:
-   - The English term always carries its **IPA** pronunciation, shown next to that term (the source for EN→RU, the translation for RU→EN).
-   - **Sense handling** (ordered most-common first): 1 meaning → translation line (with IPA), a short `Collocations:` line of common English pairings, blank line, then 2 English example sentences; 2 meanings → numbered list, each `<translation> — <short English sense tag>` (IPA on the English word) with 2 examples, collocations omitted; 3+ meanings → numbered list of all common meanings, each with 1 example, collocations omitted.
+   - **EN→RU only:** the English input word carries its **IPA** pronunciation. RU→EN cards omit IPA — the English output is what the learner is producing, so per-word IPA is noise.
+   - **Sense handling** (ordered most-common first): 1 meaning → translation line (with IPA for EN→RU), a short `Collocations:` line of common English pairings, blank line, then 2 English example sentences; 2 meanings → numbered list, each `<translation> — <short English sense tag>` (IPA on the English word for EN→RU) with 2 examples, collocations omitted; 3+ meanings → numbered list of all common meanings, each with 1 example, collocations omitted.
    - Every example sentence is in English, prefixed with `• `; examples under a numbered meaning are indented.
 
 Output is the reply only — no preamble, no category label, no surrounding quotation marks, no closing notes.
