@@ -70,7 +70,7 @@ This secret is sent by Telegram with every update and verified by the Worker. Ge
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
-This works on Windows, macOS, and Linux without additional tools. Save the output — you will use it in steps 7 and 10.
+This works on Windows, macOS, and Linux without additional tools. Save the output — you will use it in steps 7 and 9.
 
 ---
 
@@ -100,13 +100,31 @@ On success, Wrangler prints the Worker URL:
 https://translate-bot.<your-subdomain>.workers.dev
 ```
 
-Note this URL — you need it in steps 9 and 10.
+Note this URL — you need it in step 9.
 
 ---
 
-## 9. Discover the Group Chat ID
+## 9. Register the Webhook
 
-Telegram does not tell you the group's numeric ID up front; you need to ask it to send one message and observe the incoming update.
+Bind your Worker URL and the secret token in a single call. Replace the placeholders with real values.
+
+```
+curl "https://api.telegram.org/bot<BOT_TOKEN>/setWebhook?url=https://translate-bot.<subdomain>.workers.dev/webhook&secret_token=<WEBHOOK_SECRET>"
+```
+
+Verify the registration succeeded:
+
+```
+curl "https://api.telegram.org/bot<BOT_TOKEN>/getWebhookInfo"
+```
+
+The response should show your Worker URL and `"pending_update_count": 0`.
+
+---
+
+## 10. Discover the Group Chat ID
+
+Telegram does not tell you the group's numeric ID up front; you need to ask it to send one message and observe the incoming update. This step must come after the webhook is registered (step 9) — only then does Telegram deliver group messages to the Worker.
 
 No code edit is required: until `ALLOWED_CHAT_ID` matches your group, the Worker rejects every message but logs the rejected chat's ID (see the "Perimeter 2" check in `src/index.ts`). You read that ID from the logs, set it, and redeploy.
 
@@ -139,24 +157,6 @@ No code edit is required: until `ALLOWED_CHAT_ID` matches your group, the Worker
    ```
 
 > Group IDs are negative. If your value is positive, the group has not been upgraded to a supergroup yet, which is fine — just use the value you see.
-
----
-
-## 10. Register the Webhook
-
-Bind your Worker URL and the secret token in a single call. Replace the placeholders with real values.
-
-```
-curl "https://api.telegram.org/bot<BOT_TOKEN>/setWebhook?url=https://translate-bot.<subdomain>.workers.dev/webhook&secret_token=<WEBHOOK_SECRET>"
-```
-
-Verify the registration succeeded:
-
-```
-curl "https://api.telegram.org/bot<BOT_TOKEN>/getWebhookInfo"
-```
-
-The response should show your Worker URL and `"pending_update_count": 0`.
 
 ---
 
