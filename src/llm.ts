@@ -1,13 +1,7 @@
 import type { Env } from "./types";
 
 const MODEL = "claude-haiku-5-5";
-
-// Haiku 4.5 answered inside 2048 tokens with thinking off. Haiku 5.5's
-// tokenizer counts the same text as about 30% more tokens, and adaptive
-// thinking (on by default) shares this budget. Keep the old answer allowance,
-// scaled up, and add another 2048 for thinking so a thinking block cannot
-// consume the whole card.
-const ANSWER_TOKENS = Math.ceil(2048 * 1.3);
+const ANSWER_TOKENS = 2663;
 const THINKING_TOKENS = 2048;
 const MAX_TOKENS = ANSWER_TOKENS + THINKING_TOKENS;
 
