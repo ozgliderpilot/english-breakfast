@@ -1,6 +1,9 @@
 import type { Env } from "./types";
 
-const MODEL = "claude-haiku-4-5-20251001";
+const MODEL = "claude-haiku-5-5";
+const ANSWER_TOKENS = 2663;
+const THINKING_TOKENS = 2048;
+const MAX_TOKENS = ANSWER_TOKENS + THINKING_TOKENS;
 
 export async function translate(
   systemPrompt: string,
@@ -16,7 +19,7 @@ export async function translate(
     },
     body: JSON.stringify({
       model: MODEL,
-      max_tokens: 2048,
+      max_tokens: MAX_TOKENS,
       system: systemPrompt,
       messages: [{ role: "user", content: userText }],
     }),
