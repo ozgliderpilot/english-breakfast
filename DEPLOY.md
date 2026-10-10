@@ -150,7 +150,7 @@ No code edit is required: until `ALLOWED_CHAT_ID` matches your group, the Worker
    }
    ```
 
-5. Redeploy so the new value takes effect:
+5. Redeploy so the new value takes effect. After the GitHub Action in [Later deploys](#12-later-deploys) is in place, commit `wrangler.jsonc` and push to `main`. Until then, or if you need to ship from this machine, use the manual fallback:
 
    ```
    npx wrangler deploy
@@ -177,15 +177,31 @@ If a translation fails, the bot sends `⚠️ Translation failed — please try 
 
 ---
 
-## 12. Rollback and Updating Secrets
+## 12. Later deploys
 
-**Rollback:** Cloudflare automatically keeps previous Worker versions. To roll back, go to the [Cloudflare Dashboard](https://dash.cloudflare.com) → Workers & Pages → your Worker → Deployments, and click **Rollback** next to any prior version.
+Push to `main`, including a merge, deploys production. The workflow [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) checks out the repo, installs dependencies with `npm ci`, runs `npm test` and `npm run typecheck`, and deploys only if those pass. Deploy uses `cloudflare/wrangler-action` (`command: deploy`), which runs the same Wrangler deploy as `npm run deploy`.
+
+The workflow reads two GitHub Actions secrets, `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`. It does not contain `BOT_TOKEN`, `LLM_API_KEY`, or `WEBHOOK_SECRET` — those stay on the Worker — and it does not call Telegram `setWebhook`. `ALLOWED_CHAT_ID` ships in `wrangler.jsonc`.
+
+**Manual fallback.** From a machine that has already run `npx wrangler login` (section 2):
+
+```
+npx wrangler deploy
+```
+
+The first deploy from GitHub happens on the merge to `main` after those two secrets exist. A push before that fails authentication and does not publish a new Worker version.
+
+---
+
+## 13. Rollback and updating secrets
+
+**Rollback:** Cloudflare keeps previous Worker versions. In the [Cloudflare dashboard](https://dash.cloudflare.com), open Workers & Pages → translate-bot → Deployments → Rollback.
 
 **Updating secrets:** Re-run `wrangler secret put <NAME>` at any time. The new value is picked up immediately on the next request — no redeploy needed.
 
 ---
 
-## 13. Local Development
+## 14. Local Development
 
 Local dev runs the actual Worker with real LLM and Telegram calls, so use a real Anthropic key and a real `BOT_TOKEN`.
 
